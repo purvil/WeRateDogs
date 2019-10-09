@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>WeRateDogs Data Wrangling Report</title>
+<title>Exploratory analysis report</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13116,7 +13116,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1><center>WeRateDogs Data Wrangling Report</center></h1><ul>
+<h1><center>WeRateDogs Data Analysis Report</center></h1><ul>
 <li><a href="https://twitter.com/dog_rates">WeRateDogs(@dog_rates)</a> Twitter account reviews dog pictures and give them score more than 10/10. It has more than 8 million followers.</li>
 </ul>
 
@@ -13126,8 +13126,9 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Data-acquisition">Data acquisition<a class="anchor-link" href="#Data-acquisition">&#182;</a></h3><ul>
-<li>I got archived tweets data for WeRateDogs tweets. Using its <code>tweet_id</code>, I downloaded detailed data using tweepy. I parsed those JSON responses to get direct retweet counts and likes for each tweet. There is a readily available data for dog breed prediction using image classification. I downloaded that dataset.</li>
+<ul>
+<li>I gathered data from various sources, cleaned it and transformed it to proper format. Dataset comprises various features like ratings of dog images, age category of dog, predicted breed type of dog, retweet count and favorite count of tweets.</li>
+<li>Features which caught my attention are distribution of <code>source</code>, distribution of <code>dog stage</code>, correlation between <code>retweet_count</code> and <code>favorite_count</code>. I also analyzed performance of neural network model for dog breed classification</li>
 </ul>
 
 </div>
@@ -13136,13 +13137,12 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Data-quality-issues">Data quality issues<a class="anchor-link" href="#Data-quality-issues">&#182;</a></h3><ul>
-<li>My primary concern was about duplicated data, missing data and inappropriate data types. There was no duplicated data. I changed data type of <code>tweet_id</code> to string. I converted data type of <code>timestamp</code> and <code>retweeted_status_timestamp</code> to datetime.</li>
-<li>Further analysis using value_counts() method on <code>source</code> column caught my attention. It has only 4 distinct sources of tweets. IPhone, Vine, Web client and TweetDeck. I cleaned that attribute, so that we can observe source easily.</li>
-<li>Attributes <code>in_reply_to_status_id</code>, <code>in_reply_to_user_id</code>, <code>retweeted_status_user_id</code>, <code>retweeted_status_timestamp</code> has missing values more than 92%. So, I decided to drop those attributes.</li>
-<li>By conducting visual analysis, I figured out dog names have very strange names like a, an, the, by, not, o, officially, all, just, very, one, quiet, mad, this, my. I replaced such names by None.</li>
-<li>I combined <code>doggo</code>, <code>floofer</code>, <code>puppper</code>, <code>puppo</code> atteributes into one attribute called <code>age_category</code>. 14 records have more than one fields set. I decided to remove such records as by doing so we will not loose large amount of data. Also, I converted type of <code>age_category</code> attribute to category which will reduce memory footprint.</li>
-<li>With analysis of <code>rating_denominator</code> and <code>rating_numerator</code> I got 23 records with <code>rating_denominator</code> less than 10. I dropped those records, as they are very less compared to our dataset size. <code>rating_numerator</code> also have values less than 10 and some outlier on right tail. But I decided to leave them as it is. May be in future we can get more insight to handle it.</li>
+<h3 id="source-distribution"><code>source</code> distribution<a class="anchor-link" href="#source-distribution">&#182;</a></h3><ul>
+<li><p><code>source</code> attribute provides information about from where the tweet or retweet is posted. It can be an iPhone, Vine, Web client or TweetDeck.
+<img src="data/tweet_source_distribution.PNG" alt=""></p>
+</li>
+<li><p>From the bar chart we can see that almost 92% of tweets are from iPhone application. And less than 1% tweets are from TweetDeck. According to this data we can assume that majority of people use iPhone apps to tweet, retweet on Twitter.</p>
+</li>
 </ul>
 
 </div>
@@ -13151,9 +13151,12 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Data-structural-issues">Data structural issues<a class="anchor-link" href="#Data-structural-issues">&#182;</a></h3><ul>
-<li><code>dog_tweets</code> dataframe comprises two information, data about tweets and data about dog ratings, age category. I created two separate dataframes for dog tweets data and dog ratings data. Also, I merged retweet and likes count data in dog tweets data.</li>
-<li>In <code>dog_prediction</code> dataframe, column contains variable name like <code>p1</code>, <code>p2</code>, <code>p3</code>. I melted those attributes.</li>
+<h3 id="age_category-distribution"><code>age_category</code> distribution<a class="anchor-link" href="#age_category-distribution">&#182;</a></h3><ul>
+<li>It has 4 different categories <code>pupper</code>: younger dog, <code>doggo</code>: adult dog, <code>puppo</code>: dog between pupper and doggo, <code>floofer</code>: dog with excess fur</li>
+</ul>
+<p><img src="data/dog_stage_distribution.PNG" alt=""></p>
+<ul>
+<li>From the distribution we can see that majority of images are of pupper. Generally pupper are not matured as doggo. So their behavior seems cute. May be because of that reason people tend to post more pupper photos.</li>
 </ul>
 
 </div>
@@ -13162,10 +13165,41 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Final-cleaned-dataset">Final cleaned dataset<a class="anchor-link" href="#Final-cleaned-dataset">&#182;</a></h3><ul>
-<li><code>twitter_archive_master.csv</code> has data about tweet timestamp, source, text, expanded_urls, retweet and like counts.</li>
-<li><code>dog_prediction_cleaned.csv</code> has data about prediction made using image classification</li>
-<li><code>dog_ratings.csv</code> has data about dog score, names and age category derived from tweets.</li>
+<h3 id="Correlation-between-favorite_count-and-retweet_count">Correlation between favorite_count and retweet_count<a class="anchor-link" href="#Correlation-between-favorite_count-and-retweet_count">&#182;</a></h3><ul>
+<li><code>favorite_count</code> is number of likes on the tweet and <code>retweet_count</code> is total number of retweets.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="data/correlation_favorite_retweet_count.PNG" alt=""></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>From the scatter plot we can see the clear positive trend between <code>favorite_count</code> and <code>retweet_count</code>. Correlation between 2 attribute is 0.80, which shows strong positive correlation. Meaning more re-tweet may be one of the factor for higher number of likes and vice versa.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Accuracy-of-dog-breed-prediction">Accuracy of dog breed prediction<a class="anchor-link" href="#Accuracy-of-dog-breed-prediction">&#182;</a></h3><p><img src="data/first_prediction_conf_dist.PNG" alt=""></p>
+<ul>
+<li>Figure shows distribution of confidence for the prediction. Majority of the confidence level are under 0.8, which shows the bad accuracy for deep learning model.</li>
+</ul>
+<p><img src="data/first_prediction_accuracy_pie.PNG" alt=""></p>
+<ul>
+<li>Pie charts represents total true predictions. About 2/3 predictions are correct. Which is again showing low accuracy of neural network model.</li>
 </ul>
 
 </div>
